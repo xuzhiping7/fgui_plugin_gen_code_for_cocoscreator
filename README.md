@@ -1,3 +1,10 @@
+#cocoscreator版本
+修改了引擎接口，FGUI接口，一些基础命名
+
+
+
+
+
 # fgui_plugin_gen_code
 fgui的插件-生成ts、cs代码-基于puerts
 

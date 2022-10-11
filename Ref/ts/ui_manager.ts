@@ -1,28 +1,24 @@
-import { FairyGUI } from 'csharp';
-import { S } from 'global/GameConfig';
-import { Singleton } from '../common/Singleton';
-import { BaseUI, UIClass } from './BaseUI';
-
+import { S } from "../global/global_instance"
+import { Singleton } from "../common/singleton"
+import { BaseUI, UIClass } from "./base_ui"
 
 class UIPageTrack {
-    public pkg: string;
-    public name: string;
-    public arg: any;
+    public pkg: string
+    public name: string
+    public arg: any
 }
 
-
-export class UIManager extends Singleton<UIManager>{
-
-    private isInit: boolean;
-    private uiRoot: FairyGUI.GComponent;
-    private uiList: BaseUI[] = [];
+export class UIManager extends Singleton<UIManager> {
+    private isInit: boolean
+    private uiRoot: fgui.GComponent
+    private uiList: BaseUI[] = []
     private uiQueue: Map<string, BaseUI[]> = new Map<string, BaseUI[]>()
 
     // 临时可能用来构造实例加载之类的用
-    private _uiClassInstance: BaseUI[] = [];
+    private _uiClassInstance: BaseUI[] = []
 
     constructor() {
-        super();
+        super()
     }
 
     /**
@@ -33,39 +29,39 @@ export class UIManager extends Singleton<UIManager>{
         this.isInit = true
 
         // 必须先生成界面打开需要的层级
-        await S.ResManager.loadFairyGUIPackage("loading_fui.bytes", "loading")
-        this.uiRoot = FairyGUI.UIPackage.CreateObject("loading", "UIRoot").asCom;
-        FairyGUI.GRoot.inst.AddChild(this.uiRoot);
+        await S.ResManager.loadFairyGUIPackage("loading", "loading")
+        this.uiRoot = fgui.UIPackage.createObject("loading", "ui_root").asCom
+        fgui.GRoot.inst.addChild(this.uiRoot)
     }
 
     private _getOrCreateUI<T extends BaseUI>(uiClass: UIClass<T>): BaseUI {
         for (let i = 0; i < this._uiClassInstance.length; ++i) {
             if (this._uiClassInstance[i].tag === uiClass) {
-                return this._uiClassInstance[i];
+                return this._uiClassInstance[i]
             }
         }
 
         let tempUI = new uiClass() as BaseUI
         this._uiClassInstance.push(tempUI)
 
-        return tempUI;
+        return tempUI
     }
 
     /**
      * 获取某个UI层级对象
      * @param name 层级对象名称
      */
-    public getLayer(name: string): FairyGUI.GComponent {
-        return this.uiRoot.GetChild(name).asCom;
+    public getLayer(name: string): fgui.GComponent {
+        return this.uiRoot.getChild(name).asCom
     }
 
     public getUI<T extends BaseUI>(uiClass: UIClass<T>): BaseUI {
         for (let i = 0; i < this.uiList.length; ++i) {
             if (this.uiList[i].tag === uiClass) {
-                return this.uiList[i];
+                return this.uiList[i]
             }
         }
-        return null;
+        return null
     }
 
     public checkInstanceIsActive(ui: BaseUI): boolean {
@@ -94,7 +90,7 @@ export class UIManager extends Singleton<UIManager>{
 
                 // 先把这个位置之前的都关闭掉!
                 for (let index = 0; index < newLen - 1; index++) {
-                    const oldUI = exists[index];
+                    const oldUI = exists[index]
                     // ! 注意这里不能自动触发打开queue队列里面的ui
                     // ! 这里因为会打开新的，所以老的关闭不播放关闭动画直接关闭
                     oldUI.setupAnimation(false)
@@ -154,7 +150,7 @@ export class UIManager extends Singleton<UIManager>{
             if (closeAllQueueUI && this.uiQueue.has(queue)) {
                 let exists = this.uiQueue.get(queue)
                 for (let index = 0; index < exists?.length; index++) {
-                    const element = exists[index];
+                    const element = exists[index]
                     this.closeUI(element.tag, false)
                 }
             }
@@ -171,15 +167,15 @@ export class UIManager extends Singleton<UIManager>{
     public getUIByComponentName(componentName: string): BaseUI {
         for (let i = 0; i < this.uiList.length; ++i) {
             if (this.uiList[i].name === componentName) {
-                return this.uiList[i];
+                return this.uiList[i]
             }
         }
-        return null;
+        return null
     }
 
     public closeUI<T extends BaseUI>(uiClass: UIClass<T>, needPopupQueue: boolean) {
         let ui: BaseUI = null
-        for (let i = 0; i < this.uiList.length;) {
+        for (let i = 0; i < this.uiList.length; ) {
             // 只要是一个类型都关掉
             if (this.uiList[i].tag === uiClass) {
                 // 先hide
@@ -187,7 +183,7 @@ export class UIManager extends Singleton<UIManager>{
 
                 // 如果queue前面有老界面打开直接关闭
                 if (this.checkQueueExistUIBefore(ui) || ui.onShowDestroyAnimation() == false) {
-                    ui.destroyUI();
+                    ui.destroyUI()
                 }
 
                 // 如果真的不需要释放界面实例才需要从缓存的list里面移除，否则保留界面实例
@@ -209,10 +205,9 @@ export class UIManager extends Singleton<UIManager>{
     public closeUIInstance<T extends BaseUI>(uiInstance: T) {
         // 如果view已经被释放关闭了也不重复关闭
         if (uiInstance != undefined && uiInstance != null && uiInstance.getView()) {
-
             for (let i = 0; i < this.uiList.length; ++i) {
                 if (this.uiList[i].tag === uiInstance.tag) {
-                    this.uiList.splice(i, 1);
+                    this.uiList.splice(i, 1)
                     break
                 }
             }
@@ -229,7 +224,7 @@ export class UIManager extends Singleton<UIManager>{
     public getExistUI() {
         let uis = []
         for (let index = 0; index < this.uiList.length; index++) {
-            const element = this.uiList[index];
+            const element = this.uiList[index]
             if (element?.getView()?.visible == true) {
                 console.log("%c ui : " + element.name + " visible.", "color:yellow")
                 uis.push(element)
@@ -243,7 +238,7 @@ export class UIManager extends Singleton<UIManager>{
         this.uiQueue.clear()
 
         if (this.uiList.length != 0) {
-            for (var i: number = 0; i < this.uiList.length;) {
+            for (var i: number = 0; i < this.uiList.length; ) {
                 // * 如果不强制并且不需要关闭的
                 if (this.uiList[i].mDontDestroyAtCloseAll == true && force == false) {
                     i++
@@ -278,15 +273,15 @@ export class UIManager extends Singleton<UIManager>{
         args: any = null,
         isNewInstance: boolean = false,
         queue: string = null,
-        animation: boolean = false,
+        animation: boolean = false
     ): Promise<BaseUI> {
         // ! 确保先初始化了
-        await this.init();
+        await this.init()
 
         let ui: BaseUI = null
 
         if (isNewInstance == false) {
-            ui = this.getUI(uiClass);
+            ui = this.getUI(uiClass)
         }
 
         // 保护一下args参数
@@ -305,16 +300,15 @@ export class UIManager extends Singleton<UIManager>{
             this.moveQueueUIToTop(ui)
 
             // 执行一次显示
-            ui.onShow(...args);
+            ui.onShow(...args)
         } else {
-
             this.showWait(true)
 
             let tempUI = this._getOrCreateUI(uiClass)
             let fguiPkgs = tempUI.getFguiPackageResNames()
             for (let index = 0; index < fguiPkgs?.length; index++) {
-                const element = fguiPkgs[index];
-                await S.ResManager.loadFairyGUIPackage(element + "_fui.bytes", element)
+                const element = fguiPkgs[index]
+                await S.ResManager.loadFairyGUIPackage(element, element)
             }
 
             // todo: 是否存在这个界面其他资源需要准备好的情况
@@ -328,49 +322,41 @@ export class UIManager extends Singleton<UIManager>{
         return ui
     }
 
-    private createUI<T extends BaseUI>(
-        uiClass: UIClass<T>,
-        isNewInstance: boolean,
-        queue: string,
-        animation: boolean,
-        args: any
-    ): BaseUI {
-
+    private createUI<T extends BaseUI>(uiClass: UIClass<T>, isNewInstance: boolean, queue: string, animation: boolean, args: any): BaseUI {
         let ui: BaseUI = null
         if (isNewInstance == false) {
-            ui = this.getUI(uiClass);
+            ui = this.getUI(uiClass)
         }
 
         if (ui != null) {
-            return ui;
+            return ui
         }
 
-        ui = new uiClass() as BaseUI;
-        ui.tag = uiClass;
+        ui = new uiClass() as BaseUI
+        ui.tag = uiClass
         ui.queue = queue
         ui.uiInstanceArgs = args
 
         // 实例化ui
-        ui.createUI(...args);
+        ui.createUI(...args)
 
         // 设置一下打开是否需要动画
         ui.setupAnimation(animation)
 
         // 把ui插入所有ui列表
-        this.uiList.push(ui);
+        this.uiList.push(ui)
 
         // 当第一次实例化时候执行1次
-        ui.onAwake(...args);
+        ui.onAwake(...args)
 
         // 把ui插到queue里面
         this.moveQueueUIToTop(ui)
 
         // 每次显示都执行一次
-        ui.onShow(...args);
+        ui.onShow(...args)
 
-        return ui;
+        return ui
     }
-
 
     // -----------------------------------------------------------
     //----------------------quick api-----------------------------
@@ -378,18 +364,9 @@ export class UIManager extends Singleton<UIManager>{
 
     showWait(isShow: boolean) {
         if (isShow) {
-            FairyGUI.GRoot.inst.ShowModalWait()
+            fgui.GRoot.inst.showModalWait()
         } else {
-            FairyGUI.GRoot.inst.CloseModalWait()
+            fgui.GRoot.inst.closeModalWait()
         }
     }
-
-
-
-
-
-
-
-
-
 }

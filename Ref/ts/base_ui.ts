@@ -1,5 +1,4 @@
-import { FairyGUI } from 'csharp';
-import { S } from 'global/GameConfig';
+import { S } from "../global/global_instance"
 
 /**
  * 可以把UI生成到层级越往后越高层级
@@ -16,21 +15,20 @@ export enum UILayer {
 
 // 页面实例的通用接口对象
 export interface UIClass<T extends BaseUI> {
-    new(): T;
+    new (): T
 }
 
-
 export abstract class BaseUI {
-    public name: string;
-    public tag: any;
+    public name: string
+    public tag: any
 
     // fgui需要生成的页面的数据
-    protected dependencies = []; // 依赖的包名 fgui packagenames
-    protected configRes = []; // 依赖的配置表名字 例如这个动态界面用到配置表: item
+    protected dependencies = [] // 依赖的包名 fgui packagenames
+    protected configRes = [] // 依赖的配置表名字 例如这个动态界面用到配置表: item
     // protected otherPreloadUrls: LoadGruopInfo // 可以设置其他资源url需要确保先下载完再打开的
 
-    protected packageName = "";
-    protected componentName = "";
+    protected packageName = ""
+    protected componentName = ""
     protected layerName = UILayer.Normal
     protected isFullScreen: boolean = true
 
@@ -48,12 +46,12 @@ export abstract class BaseUI {
     dontDestroyWhenClose: boolean = false
 
     /**
-    * 关闭所有界面接口不关闭这个界面例如加载进度界面
-    */
+     * 关闭所有界面接口不关闭这个界面例如加载进度界面
+     */
     mDontDestroyAtCloseAll: boolean = false
 
     // 是否有队列标记，如果有的话那么关闭时候打开前面的，打开插到队列后面
-    public queue: string;
+    public queue: string
 
     private _args: any
     public get uiInstanceArgs(): any {
@@ -64,13 +62,13 @@ export abstract class BaseUI {
     }
 
     // 当前页面的显示对象
-    protected view: FairyGUI.GComponent;
+    protected view: fgui.GComponent
 
     // 是否使用多语言
-    protected useLang: boolean = true;
+    protected useLang: boolean = true
 
     // 自动绑定FairyGUI元件
-    public bindAll(com: FairyGUI.GComponent): any {
+    public bindAll(com: fgui.GComponent): any {
         return this
     }
 
@@ -80,14 +78,14 @@ export abstract class BaseUI {
     }
 
     public get isOpen(): boolean {
-        return this.view?.visible ?? false;
+        return this.view?.visible ?? false
     }
 
-    protected getChild(child: string): FairyGUI.GObject {
-        return this.view?.GetChild(child)
+    protected getChild(child: string): fgui.GObject {
+        return this.view?.getChild(child)
     }
 
-    public getView(): FairyGUI.GComponent {
+    public getView(): fgui.GComponent {
         return this.view
     }
 
@@ -118,7 +116,7 @@ export abstract class BaseUI {
 
         if (this.dependencies?.length > 0) {
             for (let index = 0; index < this.dependencies.length; index++) {
-                const element = this.dependencies[index];
+                const element = this.dependencies[index]
                 ret.push(element)
             }
         }
@@ -133,13 +131,9 @@ export abstract class BaseUI {
         return this.configRes
     }
 
-
     public createUI(...args: any[]) {
         // 创建界面
-        this.view = FairyGUI.UIPackage.CreateObject(
-            this.packageName,
-            this.componentName
-        ).asCom;
+        this.view = fgui.UIPackage.createObject(this.packageName, this.componentName).asCom
 
         // 绑定一下界面上的导出组件
         this.bindAll(this.view)
@@ -147,26 +141,25 @@ export abstract class BaseUI {
         // ! 添加到指定的UI层显示
         let layer = S.UIManager.getLayer(this.layerName.toString())
         if (this.view) {
-            layer.AddChild(this.view)
+            layer.addChild(this.view)
         }
 
         if (this.isFullScreen) {
-            this.view?.MakeFullScreen()
+            this.view?.makeFullScreen()
         }
-
     }
 
     protected addCurrentViewToLayer(newLayer: UILayer) {
         let layer = S.UIManager.getLayer(this.layerName.toString())
         if (this.view) {
             // ! 先从添加过的父物体移除
-            this.view.RemoveFromParent()
+            this.view.removeFromParent()
 
-            layer.AddChild(this.view)
+            layer.addChild(this.view)
         }
 
         if (this.isFullScreen) {
-            this.view?.MakeFullScreen()
+            this.view?.makeFullScreen()
         }
     }
 
@@ -183,14 +176,13 @@ export abstract class BaseUI {
         // 执行一次销毁
         try {
             // this.onDestroy();
-        }
-        catch (e) {
+        } catch (e) {
             console.error(e)
         }
 
         // 释放显示的对象
         if (this.dontDestroyWhenClose == false || force) {
-            this.view?.Dispose();
+            this.view?.dispose()
             this.view = null
         } else {
             if (this.view) {
@@ -199,8 +191,7 @@ export abstract class BaseUI {
         }
     }
 
-    public abstract onAwake(...args: any): void;
-    public abstract onShow(...args: any): void;
-    public abstract onClose(...args: any): void;
-
+    public abstract onAwake(...args: any): void
+    public abstract onShow(...args: any): void
+    public abstract onClose(...args: any): void
 }

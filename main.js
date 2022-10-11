@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onDestroy = exports.onPublish = void 0;
 const csharp_1 = require("csharp");
-const GenCode_CSharp_1 = require("./GenCode_CSharp");
+const GenCode_TypeScript_1 = require("./GenCode_TypeScript");
 const App = csharp_1.FairyEditor.App;
 App.pluginManager.LoadUIPackage(App.pluginManager.basePath + "/" + eval("__dirname") + '/CustomInspector');
 class ExportCodeFlagInspector extends csharp_1.FairyEditor.View.PluginInspector {
@@ -116,8 +116,8 @@ function onPublish(handler) {
         return;
     handler.genCode = false; //prevent default output
     console.log('开始生成代码');
-    // genCodeTs(handler); 
-    (0, GenCode_CSharp_1.genCodeCS)(handler);
+    GenCode_TypeScript_1.genCodeTs(handler);
+    //genCodeCS(handler);
 }
 exports.onPublish = onPublish;
 function onDestroy() {

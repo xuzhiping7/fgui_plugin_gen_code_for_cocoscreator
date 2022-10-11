@@ -139,8 +139,8 @@ function onPublish(handler: FairyEditor.PublishHandler) {
 
     console.log('开始生成代码');
 
-    // genCodeTs(handler); 
-    genCodeCS(handler);
+    genCodeTs(handler); 
+    //genCodeCS(handler);
 }
 
 function onDestroy() {
